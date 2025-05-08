@@ -1,9 +1,9 @@
+[build]
+  functions = "functions"
+  command = "echo 'No build needed'"
+
 [[redirects]]
-  force = true
-  from = "/*"
-  to = "https://api-seller.ozon.ru/:splat"
+  from = "/api/*"
+  to = "/.netlify/functions/ozon-proxy/:splat"
   status = 200
-  headers = {
-    Client-Id = "2781980",
-    Api-Key = "eaa2193e-edf3-432f-ac91-a2aab845f46c"
-  }
+  force = true
