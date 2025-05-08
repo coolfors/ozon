@@ -1,0 +1,20 @@
+{
+  "name": "netlify-ozon-proxy",
+  "version": "1.0.0",
+  "description": "Ozon API Proxy with Netlify Functions",
+  "scripts": {
+    "start": "netlify dev",
+    "build": "echo 'No build required for functions'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "netlify-lambda": "^2.0.16"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
