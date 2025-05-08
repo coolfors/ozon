@@ -1,4 +1,4 @@
 [[redirects]]
   from = "/*"
-  to = "https://api-seller.ozon.ru/ :splat"
+  to = "https://github.com/ :splat"
   status = 200
