@@ -1,9 +1,16 @@
 [build]
-  functions = "functions"
-  command = "echo 'No build needed'"
+command = "npm run build"
+functions = "functions"
+publish = "dist"
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/ozon-proxy/:splat"
   status = 200
   force = true
+# 在netlify.toml中添加
+[[headers]]
+for = "/*"
+[headers.values]
+X-Ozon-Client-Id = ""
+X-Ozon-Api-Key = ""

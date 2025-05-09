@@ -1,66 +1,75 @@
 const axios = require('axios');
 
 exports.handler = async (event, context) => {
-    try {
-        // 允许的域名白名单（可选安全措施）
-        const allowedOrigins = [
-            'https://https://ozonapi1.netlify.app',
-            'http://localhost:3000'
-        ];
+    // 允许跨域配置（按需调整）
+    const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Ozon-Client-Id, X-Ozon-Api-Key',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+    };
+// 记录关键日志（需配合日志服务）
+    console.log('Proxy Request:', {
+        path: event.path,
+        method: event.httpMethod,
+        clientId: clientId,
+        timestamp: new Date().toISOString()
+    });
+    // 处理预检请求
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers: corsHeaders };
+    }
 
-        // 处理 CORS 预检请求
-        if (event.httpMethod === 'OPTIONS') {
+    try {
+        // 从请求头获取认证信息（更安全的方式）
+        const clientId = event.headers['x-ozon-client-id'];
+        const apiKey = event.headers['x-ozon-api-key'];
+
+        // 认证校验
+        if (!clientId || !apiKey) {
             return {
-                statusCode: 204,
-                headers: {
-                    'Access-Control-Allow-Origin': event.headers.origin || '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Client-Id, Api-Key'
-                }
+                statusCode: 401,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ error: "Missing client_id or api_key in headers" })
             };
         }
 
-        // 检查来源域名（可选）
-        const origin = event.headers.origin;
-        if (allowedOrigins.length > 0 && !allowedOrigins.includes(origin)) {
-            return { statusCode: 403, body: 'Forbidden' };
-        }
+        // 动态构建目标URL
+        const baseUrl = 'https://api-seller.ozon.ru';
+        const apiPath = event.path.replace('/.netlify/functions/ozon-proxy', '');
+        const targetUrl = `${baseUrl}${apiPath}`;
 
-        // 构造目标 API 地址
-        const apiBase = 'https://api-seller.ozon.ru';
-        const path = event.path.replace('/.netlify/functions/ozon-proxy', '');
-        const targetUrl = `${apiBase}${path}`;
-
-        // 转发请求
-        const response = await axios({
+        // 构造代理请求配置
+        const proxyConfig = {
             method: event.httpMethod,
             url: targetUrl,
             headers: {
-                'Client-Id': process.env.OZON_CLIENT_ID,    // 从环境变量读取
-                'Api-Key': process.env.OZON_API_KEY,        // 从环境变量读取
+                'Client-Id': clientId,
+                'Api-Key': apiKey,
                 'Content-Type': event.headers['content-type'] || 'application/json'
             },
             data: event.body
-        });
+        };
 
-        // 返回结果
+        // 执行代理请求
+        const response = await axios(proxyConfig);
+
         return {
             statusCode: response.status,
             headers: {
-                'Access-Control-Allow-Origin': origin || '*',
-                'Content-Type': 'application/json'
+                ...corsHeaders,
+                'Content-Type': response.headers['content-type']
             },
             body: JSON.stringify(response.data)
         };
 
     } catch (error) {
-        // 错误处理
         console.error('Proxy Error:', error);
         return {
             statusCode: error.response?.status || 500,
+            headers: corsHeaders,
             body: JSON.stringify({
                 error: error.message,
-                details: error.response?.data
+                details: error.response?.data || null
             })
         };
     }
