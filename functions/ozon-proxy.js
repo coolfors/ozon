@@ -8,12 +8,7 @@ exports.handler = async (event, context) => {
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
     };
 // 记录关键日志（需配合日志服务）
-    console.log('Proxy Request:', {
-        path: event.path,
-        method: event.httpMethod,
-        clientId: clientId,
-        timestamp: new Date().toISOString()
-    });
+
     // 处理预检请求
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers: corsHeaders };
@@ -23,6 +18,13 @@ exports.handler = async (event, context) => {
         // 从请求头获取认证信息（更安全的方式）
         const clientId = event.headers['x-ozon-client-id'];
         const apiKey = event.headers['x-ozon-api-key'];
+
+        console.log('Proxy Request:', {
+            path: event.path,
+            method: event.httpMethod,
+            clientId: clientId,
+            timestamp: new Date().toISOString()
+        });
 
         // 认证校验
         if (!clientId || !apiKey) {
