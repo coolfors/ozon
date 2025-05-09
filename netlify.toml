@@ -1,7 +1,6 @@
 [build]
-command = "npm run build"
-functions = "functions"
-publish = "dist"
+  functions = "functions"
+  command = "echo 'No build needed'"
 
 [[redirects]]
   from = "/api/*"
@@ -10,7 +9,7 @@ publish = "dist"
   force = true
 # 在netlify.toml中添加
 [[headers]]
-for = "/*"
+  for = "/*"
 [headers.values]
-X-Ozon-Client-Id = ""
-X-Ozon-Api-Key = ""
+  X-Ozon-Client-Id = ""
+  X-Ozon-Api-Key = ""
